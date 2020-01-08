@@ -1,3 +1,6 @@
+__author__="Aberto García"
+__license__ = "GPL"
+__email__ = "albert28@ucm.es"
 
 from auxiliaryFns import *
 
