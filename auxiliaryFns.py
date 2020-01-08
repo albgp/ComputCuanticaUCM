@@ -4,12 +4,35 @@
 from itertools import count, islice
 from functools import reduce
 import random 
-from math import gcd
+from math import gcd, log2
 import time
 import string
 from math import sqrt
 import numpy as np 
 from scipy.linalg import logm, expm, sqrtm
+import sys
+import matplotlib.pyplot as plt
+from sympy.physics.quantum import TensorProduct as tp
+import sympy as sp
+from sympy import Matrix, Rational, eye, latex, I
+from sympy.physics.quantum.dagger import Dagger
+from matplotlib import rc
+import qutip
+
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
+rc('text.latex', preamble=r'\usepackage{amsmath}')
+
+import warnings
+warnings.filterwarnings("ignore")
+
+from sympy.assumptions.assume import global_assumptions
+from sympy import AppliedPredicate, Q
+
+verbose=False
 
 
 strProb = lambda st, probs: sum([probs[char] for char in st]) #This function returns, for a given string, the sum of the probabilities
@@ -66,3 +89,33 @@ binaryArrayToInt = lambda x: int("".join([str(i) for i in x]),2)
 
 multiKron = lambda *args : reduce(np.kron, args) #Nested kronecker products are ugly. this function performs the kronecker product between more than two matrices. 
 multiProd = lambda *args : reduce(np.matrix.matmul, args) #Same with ordinary matrix product
+
+def decomposeProductTensor(mat, dims): #Decompose a nmxnm matrix into a nxnxmxm matrix. Matrix, n and m as the function input.
+	a,b=dims
+	return mat.reshape([a, b, a, b]) 
+
+def myPartialTrace4x3in2ndSpace(mat): #Calculate the partial trace over the 3rd (C) 3x3 system.
+	reshaped_matrix = decomposeProductTensor(mat, [4,3]) #Decompose it
+	tracedMatrix= np.einsum('jiki->jk', reshaped_matrix) #Sums over repeated indices, calculates the trace on the 2nd subsystem. (Returns a 4by4 density matrix on the AB system)
+	return tracedMatrix
+
+def myPartialTraspose4x3in2ndSpace(mat): #Calculate the partial traspose over the 3rd (C) 3x3 system.
+	reshaped_matrix = decomposeProductTensor(mat, [4,3]) #Decompose it
+	trMatrix= np.einsum('ijkl->ilkj', reshaped_matrix) 
+	return trMatrix.reshape([12,12])
+
+def myPartialTraspose2x2in2ndSpace(mat): #Calculate the partial traspose over the 2nd (B) 2x2 system.
+	reshaped_matrix = decomposeProductTensor(mat, [2,2]) #Decompose it
+	trMatrix= np.einsum('ijkl->ilkj', reshaped_matrix) 
+	return trMatrix.reshape([4,4])
+
+
+
+
+
+
+
+
+
+
+
