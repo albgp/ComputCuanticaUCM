@@ -1,6 +1,3 @@
-__author__="Aberto García"
-__license__ = "GPL"
-__email__ = "albert28@ucm.es"
 
 from auxiliaryFns import *
 
@@ -16,7 +13,7 @@ assert len(probs)==27 #Checking input is ok.
 
 
 #Function to compute entropy given a probability dictionary (only probabilities are needed)
-calculateEntropy = lambda probs: sum([-np.log2(p)*p for _,p in probs.items()]) 
+calculateEntropy = lambda probs: sum([-np.log2(p)*p for _,p in probs.items()])
 
 print("La entropía calculada para las probabilidades siguientes\n{}\nes {}".format(probs,calculateEntropy(probs))) #Just priting
 
@@ -31,9 +28,9 @@ print("La entropía calculada para las probabilidades siguientes\n{}\nes {}".for
 #####################################
 #          Base 2 code              #
 #####################################
- 
 
-def myHuffman2(probs): #This function computes the huffman binary code for a given symbol list alongside their probability, and returns it in a dict 
+
+def myHuffman2(probs): #This function computes the huffman binary code for a given symbol list alongside their probability, and returns it in a dict
 	# indexed by symbol.
 	current=list(probs.keys()) #We start with a exhaustive list of symbols
 	code={i:"" for i in current} #And the dictionary that will later store the code (now empty).
@@ -57,7 +54,7 @@ code2=myHuffman2(probs) #Calculating the code
 
 print ("Símbolo\tProbab\tHuffmanCod") #Printing it
 for k,v in code2.items():
-    print ("{}\t{}\t{}".format(k,probs[k],v))
+	print ("{}\t{}\t{}".format(k,probs[k],v))
 
 ### Longitud Media. Input: dict indexed by char containing arrays w/ its Huffman code and the probability dict w/ ocurrence probability
 
@@ -120,13 +117,13 @@ def myHuffman3(probs): #Ternary huffman code generator function
 	for k,v in code.items():
 		code[k]=v[::-1] #And finally, reverse it
 
-	return code 
+	return code
 
 code3=myHuffman3(probs)
 
 print ("Símbolo\tProbab\tHuffmanCod")
 for k,v in code3.items():
-    print ("{}\t{}\t{}".format(k,probs[k],v))
+	print ("{}\t{}\t{}".format(k,probs[k],v))
 
 print("La longitud media del código Huffman es: {}".format(length(probs,code3))) #Just printing, again
 
@@ -154,8 +151,8 @@ else:
 encodeMsg=lambda code, msg: "".join([code[char] for char in msg]) #Given a code and a msg, it returns the encoded msg, C(msg)
 
 msgToEncode="A-SINGLE-LOOK-AT-THEM-IS-ENOUGH-TO-SHOW-THEY-COULD-ONLY-BE-WRITTEN-DOWN-BY-A-MATHEMATICIAN-OF-THE-HIGHEST-CLASS"
-encodedMsg=encodeMsg(code3,msgToEncode) 
-print("El mensaje codificado es: {}".format( encodedMsg )) #Easy 
+encodedMsg=encodeMsg(code3,msgToEncode)
+print("El mensaje codificado es: {}".format( encodedMsg )) #Easy
 
 n=int(encodedMsg,3) #Previous huffman sequence read as a base 3 integer
 assert len(str(n))==141 #Checking everything is going ok
@@ -185,12 +182,12 @@ def decodeMsg(code, msg): #Method to decode a msg according to a huffman code fo
   #Assuming the input msg corresponds to a code-encoded original, otherwise the algorithm may never end.
   decodedmsg=""
   while msg!="": #While not fully decoded
-    for k,v in code.items(): #We look for the matching huffman code at the begining of the remaining sequence
-      if msg.startswith(v): #Found it!
-        decodedmsg+=k #Append the char to the decoded msg
-        msg=msg[len(v):] # and delete the already decoded part from the original seq
-        break # Go find the next one
-  return decodedmsg 
+	for k,v in code.items(): #We look for the matching huffman code at the begining of the remaining sequence
+	  if msg.startswith(v): #Found it!
+		decodedmsg+=k #Append the char to the decoded msg
+		msg=msg[len(v):] # and delete the already decoded part from the original seq
+		break # Go find the next one
+  return decodedmsg
 
 
 
@@ -226,45 +223,45 @@ print("El mensaje decodificado es: {}".format(decodeMsg(code2,msgToDecode)))
 
 def MillerRabinTest(n, verbose=False):# Miller-Rabin primality test. To avoid complications, works well for n>10
 	#Returns: False if composite, True if maybe a prime.
-    assert n==int(n)
+	assert n==int(n)
 
-    #We look for the decomposition of n-1=d*2^s with larger s
-    s = 0
-    d = n-1
-    while d%2==0:
-        d>>=1 #d//=2 but faster
-        s+=1
-    assert(2**s * d == n-1)
- 
- 	#The following conditions hold for primes bc if n is prime, then by Fermat's little theorem, a^(n-1)=1 (mod n). By the definition of prime in a field,
- 	#and the decomposiion x^2=(x-1)(x+1), if n=2^rd, as calculated, then a^d=1 (mod n) or a^(d2^s)=-1. If it is not satisfied by any of the s and d that define
- 	# the decomposition, then it cannot be a prime.
-    def isComposite(a): #Checking if any prime-conditioned constraint holds, then we cannot conclude that a is prime
-    	# The iterative powering must be done in a modular way (otherwise it'd be exponential in time). Pow allows it.
-        if pow(a, d, n) == 1: return False #Equality a^d (mod n) =1 => n may be prime 
-        for i in range(s): #As s was the larger, we only need to try i-values up to s-1.
-            if pow(a, 2**i * d, n) == n-1: return False #a^(d2^i) mod(n)=n-1=-1 (mod n) => may be prime
-        if verbose:
-        	print("El test de Miller-Rabin ha hallado un compuesto con semilla a={}".format(a))
-        return True  #If it does not satisfy any of the above contraints,
-        #then, by contrapositive, it can't be prime.
- 
-    for i in range(15):# If n is probably prime, number of chances to find the composite answer. Success probability: 1-1/4^(15). Fckin high.
-        a = random.randrange(2, n) #Choosing a seed
-        if isComposite(a): #If we know for sure that it's not a prime, we return composite
-            return False
- 
-    return True  #Else, returns probably prime. (Deterministic for negative answers, probabilistic for positive ones)
+	#We look for the decomposition of n-1=d*2^s with larger s
+	s = 0
+	d = n-1
+	while d%2==0:
+		d>>=1 #d//=2 but faster
+		s+=1
+	assert(2**s * d == n-1)
+
+	#The following conditions hold for primes bc if n is prime, then by Fermat's little theorem, a^(n-1)=1 (mod n). By the definition of prime in a field,
+	#and the decomposiion x^2=(x-1)(x+1), if n=2^rd, as calculated, then a^d=1 (mod n) or a^(d2^s)=-1. If it is not satisfied by any of the s and d that define
+	# the decomposition, then it cannot be a prime.
+	def isComposite(a): #Checking if any prime-conditioned constraint holds, then we cannot conclude that a is prime
+		# The iterative powering must be done in a modular way (otherwise it'd be exponential in time). Pow allows it.
+		if pow(a, d, n) == 1: return False #Equality a^d (mod n) =1 => n may be prime
+		for i in range(s): #As s was the larger, we only need to try i-values up to s-1.
+			if pow(a, 2**i * d, n) == n-1: return False #a^(d2^i) mod(n)=n-1=-1 (mod n) => may be prime
+		if verbose:
+			print("El test de Miller-Rabin ha hallado un compuesto con semilla a={}".format(a))
+		return True  #If it does not satisfy any of the above contraints,
+		#then, by contrapositive, it can't be prime.
+
+	for i in range(15):# If n is probably prime, number of chances to find the composite answer. Success probability: 1-1/4^(15). Fckin high.
+		a = random.randrange(2, n) #Choosing a seed
+		if isComposite(a): #If we know for sure that it's not a prime, we return composite
+			return False
+
+	return True  #Else, returns probably prime. (Deterministic for negative answers, probabilistic for positive ones)
 
 
 
 primesFound=[2,5,653,348527,551569] #Prime divisors obtained using the Brent algorithm
 # https://maths-people.anu.edu.au/~brent/pd/rpb051i.pdf
 # alongside the sympy implementation of the Pollard-rho1 algorithm
-# the brute force method would also work for these ones. 
+# the brute force method would also work for these ones.
 
 #Not the coolest algorithm for prime checking, as it works in O(2^(n/2)) in the worst case scenario for a n-bit int, but it's okay.
-isPrime = lambda n: not any(n%k==0 for k in range(2,int(sqrt(n)-1)+2)) 
+isPrime = lambda n: not any(n%k==0 for k in range(2,int(sqrt(n)-1)+2))
 
 primesFound=[]
 for i in range(2,10000000):
@@ -276,7 +273,7 @@ for i in range(2,10000000):
 m=n
 for p in primesFound: #Getting rid of the anoying prime divisors that we already know
 	while (m%p==0):
-		m//=p 
+		m//=p
 
 print("m={}".format(m))
 
@@ -322,7 +319,7 @@ H=np.array([
 	[0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
 	[0,0,0,1,1,1,1,0,0,0,0,1,1,1,1],
 	[0,1,1,0,0,1,1,0,0,1,1,0,0,1,1],
-	[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]]) 
+	[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]])
 
 G=np.array([
 	[1,1,0,1,0,0,0,1,0,0,0,0,0,0,1],
@@ -332,7 +329,7 @@ G=np.array([
 	[1,1,0,0,0,0,0,1,0,0,1,0,0,0,0],
 	[0,1,0,0,0,0,0,1,0,1,0,0,0,0,0],
 	[1,0,0,0,0,0,0,1,1,0,0,0,0,0,0],
-	[1,1,0,1,0,0,1,0,0,0,0,0,0,0,0],	
+	[1,1,0,1,0,0,1,0,0,0,0,0,0,0,0],
 	[0,1,0,1,0,1,0,0,0,0,0,0,0,0,0],
 	[1,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
 	[1,1,1,0,0,0,0,0,0,0,0,0,0,0,0]])
@@ -359,7 +356,7 @@ syndromes=[H.dot(v)%2 for v in D] #For each vector v in D, we calculate de syndr
 if verbose:
 	print("Síndromes: ",syndromes)
 
-Dlimpias=D.copy() 
+Dlimpias=D.copy()
 
 for i, syn in enumerate(syndromes): #For each calculated syndrome
 	position=binaryArrayToInt(syn) #Let's take the integer that it represents in Z^4_2
@@ -376,7 +373,7 @@ if True:
 	print("Dlimpias=",Dlimpias.reshape(nBlocks*15)) #Print the new D vector (Dlimpias) in a human readable way.
 	print("Dlimpias="+"".join([str(i) for i in Dlimpias.reshape(nBlocks*15)]))
 
-#Apartado B 
+#Apartado B
 
 okCols=np.array([2,4,5,6,8,9,10,11,12,13,14]) #Indexed from 0! Slice for slicing, taking out the 2^k-th value for k=0,1,2,3.
 #Just bc all power-of-two positions are parity (error correction) bits in Hamming coding.
@@ -385,7 +382,7 @@ Dlimpias=np.array([i[okCols][::-1] for i in Dlimpias]) #Take the interesting col
 
 
 n=binaryArrayToInt(Dlimpias.reshape(nBlocks*11)) #Read it in binary
-print("El número codificado en la secuencia original, recuperado con el control de errores basado en códigos Hamming y en base 10 es: {}".format(n)) 
+print("El número codificado en la secuencia original, recuperado con el control de errores basado en códigos Hamming y en base 10 es: {}".format(n))
 
 for i in range(2**11):
 	x=np.array([int(j) for j in "{0:b}".format(i).ljust(11, '0')])
@@ -472,7 +469,7 @@ print("Los autovalores para rho(0) son: {}".format(eigvals))
 
 def vonNeumanEntropy(eigvals): #Compute the entropy
 	notNullEigvals=[v for v in eigvals if v!=0] #As we define 0log0 as 0, we can leave out the null values.
-	s=0 
+	s=0
 	for v in notNullEigvals: #sum the entropy for each eigenvalue
 		vNum=v.evalf() #We need to turn them into float values (they are symbolic til now)
 		s+=-vNum*log2(vNum)
@@ -530,7 +527,7 @@ def H(lambdaVal): #Function to compute the symbolic Hamiltonian
 
 
 
-l,t = sp.symbols("lambda t") #Define the symbolic constants lambda and t
+l,t = sp.symbols("lambda t", real=True) #Define the symbolic constants lambda and t
 print("H(lambda): {}".format(latex(H(l))))
 
 ########################################
@@ -573,7 +570,7 @@ def plotDifference(Ut1, U01):
 	tArr = np.arange(-0.05, 8*np.pi+0.1, 0.1) #We'll plot it from 0 to 8pi
 	yyy=[np.linalg.norm(np.array(U01).astype(np.complex64)-np.array(Ut1.subs(t,x)).astype(np.complex64)) for x in tArr ] #Calculate the distance (trace of the subtraction)
 	#between the operator at t=0 and the one at t.
-	plt.plot(tArr,yyy,label="$\\| U_1(0)-U_1(t) \\|$") #And plot it 
+	plt.plot(tArr,yyy,label="$\\| U_1(0)-U_1(t) \\|$") #And plot it
 	#TODO legends and so on
 	plt.legend(loc='upper left', borderaxespad=0.)
 	plt.xlabel("$t$")
@@ -591,7 +588,7 @@ evOp= lambda t0: np.array(Ut1.subs(t,t0)).astype(np.complex64)
 
 def traceDistance(rho1, rho2):
 	x=rho1-rho2
-	xConjugate=x.conj().T 
+	xConjugate=x.conj().T
 	return 0.5*np.trace(sqrtm(xConjugate.dot(x)))
 
 def fidelity(rho1,rho2):
@@ -621,7 +618,12 @@ def plotEvolution(evolutionOperator, T, stepsize, initialState):
 
 plotEvolution(evOp, 2*np.pi, 0.05, rho0)
 
-sys.exit(0)
+
+
+
+
+
+
 
 
 
@@ -630,12 +632,55 @@ sys.exit(0)
 ########################################
 
 
+rho_AB=Rational(3,4)*tp(Pa, eye(2)-Pb)+Rational(1,4)*tp(eye(2)-Pa,Pb)
+rho_C=Pb
+
+rho_AB_eigvecs=[eiv[2][0]/eiv[2][0].norm() for eiv in rho_AB.eigenvects()]
+rho_AB_eigvals=[i for i in rho_AB.eigenvals(multiple=True) if i!=0 ]
+print(rho_AB_eigvals)
+
+
+def createKrausOperator(m,n,v, eigvecs, eigvals, evOp):
+	ket_n= sp.Matrix([[1],[0]]) if n==0 else sp.Matrix([[0],[1]])
+	ket_m= sp.Matrix([[1],[0]]) if m==0 else sp.Matrix([[0],[1]])
+	ket_mn = tp(ket_m,ket_n)
+	Kop=sp.Matrix(3,3,lambda i,j:0)
+
+
+	for i in range(3):
+		for j in range(3):
+			subMatrix_ij=evOp[4*i:4*i+4, 4*j:4*j+4]
+			Kop[i,j]=sp.simplify(sp.simplify(ket_mn.T*subMatrix_ij*eigvecs[v]))
+	Kop=sp.sqrt(eigvals[v])*Kop
+
+
+	def K(tval):
+		return Kop.subs({t0:tval})
+
+	return Kop, K
+
+cumsum=sp.Matrix(3,3,lambda i,j:0)
+for m in range(2):
+	for n in range(2):
+		for v in range(2):
+			Kop, K = createKrausOperator(m,n,v,rho_AB_eigvecs, rho_AB_eigvals, Ut1)
+			cumsum+=Dagger(Kop)*Kop
+			print("K_{},{},{}={}".format(m,n,v,latex(Kop)))
+
+assert sp.simplify(sp.simplify(cumsum))==eye(3)
 
 
 
 
 
-	
+
+
+
+
+
+
+
+
 
 
 
@@ -658,11 +703,11 @@ X=buildX()
 class SpectralProjector:
 	def __init__(self, val, vecs):
 		self.vecs=vecs
-		self.val=val 
+		self.val=val
 		self.projs=[]
 		for i, vec in enumerate(self.vecs):
 			normalizedProj=vec/vec.norm()
-			self.projs.append(normalizedProj*normalizedProj.T) 
+			self.projs.append(normalizedProj*normalizedProj.T)
 
 	def rhoP(self, rho):
 		return reduce(lambda x,y:x+y, [rho*vec for vec in self.projs])
@@ -682,7 +727,7 @@ print("Los posibles resultados de la medida en X son: {}".format(eigvals))
 
 t0 = sp.symbols("t_0", real=True)
 #global_assumptions.add(Q.real(t0))
-	
+
 Ut01=Ut1.subs(t,t0)
 
 eigvects = X.eigenvects()
@@ -714,7 +759,7 @@ for i, spr in enumerate(spectralProjectors):
 		pl[i].append(px)
 
 	plt.clf()
-	plt.plot(t0Vals,pl[i],label="$p({})(t_0)$".format(spr.getVal())) #And plot it 
+	plt.plot(t0Vals,pl[i],label="$p({})(t_0)$".format(spr.getVal())) #And plot it
 		#TODO legends and so on
 	plt.legend(loc='upper left', borderaxespad=0.)
 	plt.xlabel("$t$")
@@ -742,7 +787,7 @@ print(latex(rho_hat))
 
 def vonNeumanEntropy(eigvals): #Compute the entropy
 	notNullEigvals=[v.real for v in eigvals if v>1e-7] #As we define 0log0 as 0, we can leave out the null values.
-	s=0 
+	s=0
 	for v in notNullEigvals: #sum the entropy for each eigenvalue
 		s+=-v*log2(v)
 	return s
@@ -783,105 +828,23 @@ print("Autovalores para sigma_ABC^TrB: {}".format(wSigma))
 
 
 ####################################################
+#                                                  #
+#                     Saving                       #
+#                                                  #
+####################################################
+
+filename='enviromentVars.out'
+my_shelf = shelve.open(filename,'n') # 'n' for new
+
+for key in dir():
+	try:
+		my_shelf[key] = globals()[key]
+	except TypeError:
+		#
+		# __builtins__, my_shelf, and imported modules can not be shelved.
+		#
+		print('ERROR shelving: {0}'.format(key))
+my_shelf.close()
+
+####################################################
 sys.exit(0)
-
-
-
-from sympy import mathematica_code as mcode
-
-
-Hl=H(l)
-H1=np.array(H(1)).astype(np.complex64)
-
-print(sp.simplify(Hl).eigenvals())
-
-
-Ul=sp.exp(H(l))
-print(latex(Ul))
-
-evOp= lambda t: expm(1j*t*H1)
-
-def traceDistance(rho1, rho2):
-	x=rho1-rho2
-	xConjugate=x.conj().T 
-	return 0.5*np.trace(sqrtm(xConjugate.dot(x)))
-
-def fidelity(rho1,rho2):
-	rho1Sqrt= sqrtm(rho1)
-	return np.trace(rho1Sqrt.dot(rho2).dot(rho1Sqrt))
-
-def plotEvolution(evolutionOperator, T, stepsize, initialState):
-	t = np.arange(0.0, T, stepsize)
-	initState=np.array(initialState).astype(np.float64)
-	traceDistances=[]
-	fidelities=[]
-	print(t)
-	for instant in t:
-		Ut=evolutionOperator(instant)
-		currentState=Ut.dot(initialState).dot(Ut.conj().T)
-		traceDistances.append(traceDistance(initState,currentState))
-		#fidelities.append(fidelity(initState,currentState))
-
-	plt.plot(t,traceDistances)
-	plt.show()
-
-#plotEvolution(evOp, 6*np.pi, 0.1, np.array(rho0).astype(np.complex64))
-
-
-#El 4
-
-
-
-print(X.eigenvals())
-
-sys.exit(0)
-
-
-
-Ulambda = sp.simplify(sp.exp(H(l)))
-U1 = sp.simplify(sp.exp(H(1)))
-
-
-
-
-
-
-
-
-
-
-
-
-
-# rho0=3/4*multiKron(Pa,(1-Pb),Pc)+1/4*multiKron(1-Pa,Pb,Pc)
-
-# TOL=1E-7
-# if np.abs(np.matrix.trace(np.matmul(rho0,rho0))-1)<TOL:
-# 	print("El estado rho(0) es puro.")
-# else:
-# 	print("El estado rho(0) es un estado mixto.")
-
-
-# vonNeumanEntropy = lambda M : -np.matrix.trace(np.matmul(M, logm(M))) #Natural log, isnt it?
-
-
-# traceDistance = lambda M,N : 1/2*np.matrix.trace( sqrtm( matmul(M-N,M-N) ) )
-
-# fidelity = lambda M,N: np.matrix.trace(sqrtm( multiProd(sqrtm(M), N, sqrtm(M)) ) )
-
-# SA=multiKron(SA_partial, np.eye(2,2), np.eye(3,3))
-# SB=multiKron(np.eye(2,2), SB_partial, np.eye(3,3))
-# SC=multiKron(np.eye(2,2), np.eye(2,2), SC_partial)
-
-# def H(lambdaVal):
-# 	return matmul((SA+SB),SC)+lambdaVal*matmul((SA+SB+SC), np.array([[0],[0],[1]]))
-
-
-
-
-
-
-
-
-
-
