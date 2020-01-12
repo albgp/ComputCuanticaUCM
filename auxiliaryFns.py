@@ -20,6 +20,7 @@ from matplotlib import rc
 import qutip
 import shelve
 from scipy.optimize import fmin
+from sympy.matrices import GramSchmidt
 
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
