@@ -180,14 +180,14 @@ def decodeMsg(code, msg): #Method to decode a msg according to a huffman code fo
   #Inefficient, but ok, giving up the cool efficient tree structure decomposition.
 
   #Assuming the input msg corresponds to a code-encoded original, otherwise the algorithm may never end.
-  decodedmsg=""
-  while msg!="": #While not fully decoded
-	for k,v in code.items(): #We look for the matching huffman code at the begining of the remaining sequence
-	  if msg.startswith(v): #Found it!
-		decodedmsg+=k #Append the char to the decoded msg
-		msg=msg[len(v):] # and delete the already decoded part from the original seq
-		break # Go find the next one
-  return decodedmsg
+	decodedmsg=""
+	while msg!="": #While not fully decoded
+		for k,v in code.items(): #We look for the matching huffman code at the begining of the remaining sequence
+			if msg.startswith(v): #Found it!
+				decodedmsg+=k #Append the char to the decoded msg
+				msg=msg[len(v):] # and delete the already decoded part from the original seq
+				break # Go find the next one
+	return decodedmsg
 
 
 
@@ -622,7 +622,26 @@ plotEvolution(evOp, 2*np.pi, 0.05, rho0)
 
 
 
+#Find max and min
 
+initialState=rho0
+initState=np.array(rho0).astype(np.complex128)
+evolutionOperator=evOp
+
+def fidRho(t):
+	Ut=evolutionOperator(t)
+	currentState=Ut.dot(initialState).dot(Ut.conj().T)
+	currentState=np.array(currentState).astype(np.complex128)
+	return fidelity(initState,currentState)
+
+def minusTraceDrho(t):
+	Ut=evolutionOperator(t)
+	currentState=Ut.dot(initialState).dot(Ut.conj().T)
+	currentState=np.array(currentState).astype(np.complex128)
+	return -traceDistance(initState,currentState)
+
+res1=fmin(fidRho, 3)
+res2=fmin(minusTraceDrho, 3)
 
 
 
@@ -687,6 +706,8 @@ assert sp.simplify(sp.simplify(cumsum))==eye(3)
 ########################################
 #           Ejercicio 2.4              #
 ########################################
+
+print("Ejercicio 4")
 
 def buildX(): #Construimos la forma matricial del operador X
 	#X=Y·Y-Z·n
