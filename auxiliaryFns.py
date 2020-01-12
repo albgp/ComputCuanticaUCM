@@ -19,7 +19,7 @@ from sympy.physics.quantum.dagger import Dagger
 from matplotlib import rc
 import qutip
 import shelve
-
+from scipy.optimize import fmin
 
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
