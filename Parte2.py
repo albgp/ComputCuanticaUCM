@@ -561,10 +561,9 @@ print("MCOCD:  ",Ut1)
 
 U01=Ut1.subs(t,0) #Keep the original one, which will be just the identity.
 
-from sympy.solvers import solve
 
-k=sp.symbols("k")
-print("Solve: ", solve(Ut1.subs(t,t+k)-Ut1,k))
+assert sp.simplify(sp.simplify(Ut1.subs(t,t+2*sp.pi)-Ut1))==Matrix(12,12,lambda i,j:0)
+
 
 def plotDifference(Ut1, U01):
 	tArr = np.arange(-0.05, 8*np.pi+0.1, 0.1) #We'll plot it from 0 to 8pi
@@ -614,6 +613,11 @@ def plotEvolution(evolutionOperator, T, stepsize, initialState):
 	plt.legend(loc='upper left', borderaxespad=0.)
 	plt.xlabel("$t$")
 	plt.savefig('DistFid.eps', format='eps')
+
+	if verbose:
+		print("El mínimo de la fidelidad es", min(fidelities))
+		print("El máximo de la distancia en traza es", max(traceDistances))
+
 	plt.show()
 
 plotEvolution(evOp, 2*np.pi, 0.05, rho0)
@@ -723,18 +727,20 @@ X=buildX()
 
 class SpectralProjector:
 	def __init__(self, val, vecs):
-		self.vecs=vecs
+		self.vecs=GramSchmidt(vecs)
 		self.val=val
 		self.projs=[]
 		for i, vec in enumerate(self.vecs):
 			normalizedProj=vec/vec.norm()
+			print("ojo")
+			print(normalizedProj*normalizedProj.T)
 			self.projs.append(normalizedProj*normalizedProj.T)
 
 	def rhoP(self, rho):
 		return reduce(lambda x,y:x+y, [rho*vec for vec in self.projs])
 
 	def probability(self, rho):
-		return np.trace(self.rhoP(rho))
+		return sp.trace(self.rhoP(rho))
 
 	def PrhoP(self,rho):
 		return sp.simplify(reduce(lambda x,y:x+y, [vec*rho*vec for vec in self.projs]))
@@ -767,28 +773,29 @@ for i, spr in enumerate(spectralProjectors):
 	#print(i)
 	c=0
 	prob=sp.simplify(sp.simplify(spr.probability(rhot0)))
+	s+=prob
 	#print("Probabilidad del autovalor {}: {}".format(spr.getVal(), latex(sp.simplify(sp.simplify(prob))) ))
 	print("p_{}=&{}\\\\".format(spr.getVal(), latex(prob) ))
 
-	for t0Val in t0Vals:
-		c+=1
-		if c%100==0:
-			pass
-			#print(c)
-		px=sp.re(prob.subs(t0,t0Val).evalf())
-		#print("Probabilidad para el autovalor {}: {}".format(spr.getVal(), px))
-		pl[i].append(px)
+	# for t0Val in t0Vals:
+	# 	c+=1
+	# 	if c%100==0:
+	# 		pass
+	# 		#print(c)
+	# 	px=sp.re(prob.subs(t0,t0Val).evalf())
+	# 	#print("Probabilidad para el autovalor {}: {}".format(spr.getVal(), px))
+	# 	pl[i].append(px)
 
-	plt.clf()
-	plt.plot(t0Vals,pl[i],label="$p({})(t_0)$".format(spr.getVal())) #And plot it
-		#TODO legends and so on
-	plt.legend(loc='upper left', borderaxespad=0.)
-	plt.xlabel("$t$")
-	plt.savefig('p{}.pdf'.format(spr.getVal()), format='pdf')
+	# plt.clf()
+	# plt.plot(t0Vals,pl[i],label="$p({})(t_0)$".format(spr.getVal())) #And plot it
+	# 	#TODO legends and so on
+	# plt.legend(loc='upper left', borderaxespad=0.)
+	# plt.xlabel("$t$")
+	# plt.savefig('p{}.pdf'.format(spr.getVal()), format='pdf')
 	#plt.show()
 
 if verbose:
-	print("La suma de las probabilidades es: {}".format(s))
+	print("La suma de las probabilidades es: {}".format(sp.simplify(sp.simplify(s))))
 
 
 
